@@ -1,24 +1,86 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Voyager Search</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="search-area">
-    <h1 class="logo">🚀 Voyager</h1>
-    <form onsubmit="search(); return false;">
-      <input type="text" id="searchBox" placeholder="Cerca nel web senza lasciare tracce...">
-      <button type="submit">
-        🔍
-      </button>
+
+  <!-- Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="#">Informazioni</a>
+      <a href="#">Privacy</a>
+      <a href="#">Termini</a>
+    </nav>
+  </header>
+
+  <!-- Pulsante Impostazioni -->
+  <button id="settingsBtn" class="settings-button">⚙️ Impostazioni</button>
+
+  <!-- Logo -->
+  <main class="main">
+    <h1 class="logo">Voyager</h1>
+
+    <!-- Barra di ricerca -->
+    <form class="search-form" onsubmit="search(); return false;">
+      <input type="text" id="searchBox" placeholder="Cerca nel web" />
+      <div class="buttons">
+        <button type="submit">Cerca</button>
+      </div>
     </form>
-    <p id="voyaResponse" class="quote">Voya è pronta, con giudizio.</p>
-  </div>
-  <div id="results" class="results-area"></div>
+
+    <!-- Notizie recenti -->
+    <section class="recent-news">
+      <h2 class="section-title">Notizie recenti</h2>
+      <div class="news-grid" id="newsGrid">
+        <!-- News dinamiche via JS -->
+      </div>
+    </section>
+
+    <!-- Risultati -->
+    <section id="results" class="results"></section>
+  </main>
+
+  <!-- Sidebar Impostazioni -->
+  <aside id="settingsSidebar" class="sidebar">
+    <h2>Impostazioni Voyager</h2>
+
+    <label for="themeSelect">Tema:</label>
+    <select id="themeSelect">
+      <option value="dark">Scuro</option>
+      <option value="light">Chiaro</option>
+    </select>
+
+    <label for="langSelect">Lingua dei risultati:</label>
+    <select id="langSelect">
+      <option value="it">Italiano</option>
+      <option value="en">Inglese</option>
+    </select>
+
+    <label>
+      <input type="checkbox" id="stealthMode" />
+      Modalità Stealth (disattiva suggerimenti)
+    </label>
+
+    <div class="sidebar-buttons">
+      <button onclick="saveSettings()">Salva</button>
+      <button onclick="closeSidebar()">Chiudi</button>
+    </div>
+  </aside>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="#">Informazioni</a>
+      <a href="#">Termini</a>
+      <a href="#">Privacy</a>
+    </div>
+    <small>© 2025 Voyager Search, licenza MIT</small>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
