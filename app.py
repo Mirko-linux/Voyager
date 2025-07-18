@@ -1,21 +1,35 @@
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Abilita CORS per sviluppo frontend separato
+CORS(app)
 
-@app.route("/search", methods=["GET"])
+@app.route("/search")
 def search():
     query = request.args.get("q", "")
-    
-    # Risultati simulati con link reali al sito Netlify
-    fake_results = [
-        {"title": "Cos'è Voyager?", "url": "https://voyager-search.netlify.app/#cose"},
-        {"title": "La filosofia di Voya", "url": "https://voyager-search.netlify.app/#voya"},
-        {"title": f"Risultati per '{query}'", "url": f"https://voyager-search.netlify.app/#search?q={query}"}
-    ]
-    
-    return jsonify(fake_results)
+    url = f"https://api.duckduckgo.com/?q={query}&format=json&no_redirect=1"
 
+    try:
+        res = requests.get(url)
+        data = res.json()
+
+        results = []
+        if data.get("AbstractURL") and data.get("AbstractText"):
+            results.append({
+                "title": data["Heading"],
+                "url": data["AbstractURL"]
+            })
+
+        # fallback link if nothing else
+        results.append({
+            "title": f"Cerca {query} su DuckDuckGo",
+            "url": f"https://duckduckgo.com/?q={query}"
+        })
+
+        return jsonify(results)
+
+    except Exception as e:
+        return jsonify([{"title": "Errore durante la ricerca", "url": ""}])
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000) 
+    app.run(host="0.0.0.0", port=10000)  # porta fissa o usa os.environ
