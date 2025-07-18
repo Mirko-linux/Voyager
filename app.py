@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Permette richieste da altri domini (es. Netlify frontend)
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)  # Abilita CORS per sviluppo frontend separato
@@ -18,4 +18,4 @@ def search():
     return jsonify(fake_results)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)  # porta fissa o usa os.environ
+    app.run(host="0.0.0.0", port=10000) 
