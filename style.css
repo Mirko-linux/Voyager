@@ -290,6 +290,13 @@ body {
     padding: 8px 16px;
   }
 
+  .search-status {
+  margin-top: 16px;
+  font-size: 16px;
+  color: #aaa;
+  text-align: center;
+}
+
   .sidebar {
     width: 100%;
   }
