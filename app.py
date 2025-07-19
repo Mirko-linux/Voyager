@@ -7,7 +7,7 @@ CORS(app)
 from dotenv import load_dotenv
 load_dotenv()
 import os
-api_key = os.environ.get("NEWS_API_KEY")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 @app.route("/search")
 def search():
@@ -59,4 +59,5 @@ def get_news():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)  # porta fissa o usa os.environ
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
