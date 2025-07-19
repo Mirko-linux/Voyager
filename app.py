@@ -10,6 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+print ("NEWS_API_KEY:", NEWS_API_KEY)   # Debug: verifica se la chiave è caricata correttamente
 
 @app.route("/")
 def home():
@@ -26,33 +27,42 @@ def search():
 
         results = []
 
-        # Abstract principale
+        # Abstract principale se presente
         if data.get("AbstractURL") and data.get("AbstractText"):
             results.append({
                 "title": data["Heading"],
                 "url": data["AbstractURL"]
             })
 
-        # Related Topics (fino a 5 suggerimenti)
+        # RelatedTopics fino a 5 risultati
         for topic in data.get("RelatedTopics", [])[:5]:
-            if isinstance(topic, dict) and "Text" in topic and "FirstURL" in topic:
-                results.append({
-                    "title": topic["Text"],
-                    "url": topic["FirstURL"]
-                })
+            if isinstance(topic, dict):
+                if "Text" in topic and "FirstURL" in topic:
+                    results.append({
+                        "title": topic["Text"],
+                        "url": topic["FirstURL"]
+                    })
+                elif "Topics" in topic:  # se è un gruppo
+                    for sub in topic["Topics"][:3]:
+                        if "Text" in sub and "FirstURL" in sub:
+                            results.append({
+                                "title": sub["Text"],
+                                "url": sub["FirstURL"]
+                            })
 
-        # Fallback
-        results.append({
-            "title": f"Cerca {query} su DuckDuckGo",
-            "url": f"https://duckduckgo.com/?q={query}"
-        })
+        # Fallback finale
+        if not results:
+            results.append({
+                "title": f"Cerca {query} su DuckDuckGo",
+                "url": f"https://duckduckgo.com/?q={query}"
+            })
 
         return jsonify(results)
 
     except Exception as e:
         print("Errore in /search:", e)
         return jsonify([{"title": "Errore durante la ricerca", "url": ""}])
-
+    
 @app.route("/news")
 def get_news():
     if not NEWS_API_KEY:
