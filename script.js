@@ -13,8 +13,8 @@ function search() {
   responseText.innerText = `Voya sta cercando: "${query}"...`;
 
   // 🚀 FETCH al tuo backend online
-  fetch(`https://voyager-backend-85be.onrender.com/search?q=${encodeURIComponent(query)}`)
-    .then(response => response.json())
+fetch("https://voyager-backend-85be.onrender.com/search?q=...")
+  .then(response => response.json())
     .then(results => {
       if (results.length === 0) {
         responseText.innerText = "Voya non ha trovato nulla. Tipico.";
