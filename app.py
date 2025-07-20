@@ -1,73 +1,66 @@
 import os
 import requests
+from elasticsearch import Elasticsearch
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
+# 🔐 Carica variabili
 load_dotenv()
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+ELASTIC_API_KEY = os.getenv("ELASTIC_API_KEY")  # Inserisci la tua API Key qui
+
+# 🔌 Connessione Elastic
+ELASTIC_URL = "https://my-elasticsearch-project-f6e1a7.es.eu-west-1.aws.elastic.cloud:443"
+es = Elasticsearch(ELASTIC_URL, api_key=ELASTIC_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
 
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-print ("NEWS_API_KEY:", NEWS_API_KEY)   # Debug: verifica se la chiave è caricata correttamente
-
+# 🟢 Stato del backend
 @app.route("/")
 def home():
     return jsonify({"status": "Voyager backend attivo"})
 
-
+# 🔍 Cerca articoli in Elasticsearch
 @app.route("/search")
 def search():
-    query = request.args.get("q", "")
-    url = f"https://api.duckduckgo.com/?q={query}&format=json&no_redirect=1"
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
 
     try:
-        res = requests.get(url)
-        data = res.json()
+        res = es.search(index="voyager", query={
+            "multi_match": {
+                "query": query,
+                "fields": ["title^3", "description", "tags"],
+                "fuzziness": "AUTO"
+            }
+        })
+
+        hits = res.get("hits", {}).get("hits", [])[:10]
         results = []
-
-        # 1. Abstract principale (se disponibile)
-        if data.get("AbstractURL") and data.get("AbstractText"):
+        for h in hits:
+            source = h["_source"]
             results.append({
-                "title": data.get("Heading", query),
-                "url": data["AbstractURL"]
-            })
-
-        # 2. RelatedTopics fino a 5 link utili
-        for topic in data.get("RelatedTopics", [])[:5]:
-            if "Text" in topic and "FirstURL" in topic:
-                results.append({
-                    "title": topic["Text"],
-                    "url": topic["FirstURL"]
-                })
-            elif "Topics" in topic:  # gruppi nidificati
-                for sub in topic["Topics"][:3]:
-                    if "Text" in sub and "FirstURL" in sub:
-                        results.append({
-                            "title": sub["Text"],
-                            "url": sub["FirstURL"]
-                        })
-
-        # 3. Fallback solo se non troviamo nulla
-        if not results:
-            results.append({
-                "title": f"Cerca \"{query}\" su DuckDuckGo",
-                "url": f"https://duckduckgo.com/?q={query}"
+                "title": source.get("title", ""),
+                "url": source.get("url", ""),
+                "description": source.get("description", ""),
+                "tags": source.get("tags", [])
             })
 
         return jsonify(results)
 
     except Exception as e:
-        print("Errore in /search:", e)
-        return jsonify([{"title": "Errore durante la ricerca", "url": ""}])    
+        print("Errore in /search (Elastic):", e)
+        return jsonify([{"title": "Errore durante la ricerca semantica", "url": ""}])
+
 @app.route("/news")
 def get_news():
     if not NEWS_API_KEY:
         return jsonify([{"title": "Chiave NewsAPI non trovata", "url": "", "image": "", "source": ""}])
 
     url = f"https://newsapi.org/v2/top-headlines?country=it&apiKey={NEWS_API_KEY}"
-
     try:
         res = requests.get(url)
         data = res.json()
@@ -88,6 +81,7 @@ def get_news():
         print("Errore in /news:", e)
         return jsonify([])
 
+# 🚀 Avvia il server
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
